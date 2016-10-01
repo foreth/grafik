@@ -39,10 +39,20 @@ public:
 	void makeSchedule(short month, short year);
 };
 
+class Time
+{
+	short hour;
+	short minute;
+
+public:
+	Time(int hour, int minute);
+};
+
 class Day
 {
 	//vector<hour> hour_list;
 	days this_day;
+	vector<Time> time;
 
 public:
 	Day(days this_day);

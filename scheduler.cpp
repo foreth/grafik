@@ -113,8 +113,6 @@ void Month::listDays()
 	for (Day this_day : day_list)
 	{
 		cout << this_day.toString();
-		
-		
 
 		if (this_day.getDay() == SUNDAY)
 			cout << "\n";
@@ -147,4 +145,10 @@ string Day::toString()
 	case SATURDAY: return "so"; break;
 	case SUNDAY: return "nd"; break;
 	}
+}
+
+Time::Time(int hour, int minute)
+{
+	this->hour = hour;
+	this->minute = minute;
 }
