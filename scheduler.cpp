@@ -88,7 +88,11 @@ void Shop::makeSchedule(short month, short year)
 	//okresl miesiac
 	Month chosen_month(month, year); // konstuktor Month tworzy wektor dni w tym miesiacu
 
-	chosen_month.listDays();
+	chosen_month.printToConsole();
+
+	// algorytm przyznawania godzin pracownikom...
+	//..
+	//..
 }
 
 Month::Month(short month, short year)
@@ -107,17 +111,29 @@ Month::Month(short month, short year)
 	}
 }
 
-void Month::listDays()
+void Month::printToConsole()
 {
 
 	for (Day this_day : day_list)
 	{
 		cout << this_day.toString();
 
-		if (this_day.getDay() == SUNDAY)
+		vector<WorkHour> temp = this_day.getTime();
+
+		cout << "( ";
+
+		for (WorkHour h : temp)
+		{
+			cout << h.getHour() << ", ";
+		}
+
+		cout << " )" << endl;
+
+		/*if (this_day.getDay() == SUNDAY)
 			cout << "\n";
 		else
-			cout << " ";
+			cout << " ";*/
+
 	}
 
 	cout << endl;
@@ -126,11 +142,25 @@ void Month::listDays()
 Day::Day(days this_day)
 {
 	this->this_day = this_day;
+
+	short open_hour = 7;
+	short close_hour = 22;
+
+	//utworzenie godzin
+	for (int i = open_hour; i <= close_hour; i++)
+	{
+		time.push_back(WorkHour(i, 0));
+	}
 }
 
 days Day::getDay()
 {
 	return this_day;
+}
+
+vector<WorkHour> Day::getTime()
+{
+	return time;
 }
 
 string Day::toString()
@@ -147,8 +177,10 @@ string Day::toString()
 	}
 }
 
-Time::Time(int hour, int minute)
+Time::Time(short hour, short minute)
 {
 	this->hour = hour;
 	this->minute = minute;
 }
+
+

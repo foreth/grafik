@@ -13,5 +13,4 @@ int main()
 
 	rossmann.makeSchedule(9, 2016);
 
-
 }

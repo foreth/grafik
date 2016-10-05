@@ -45,18 +45,31 @@ class Time
 	short minute;
 
 public:
-	Time(int hour, int minute);
+	Time(short hour, short minute);
+	short getHour(){ return hour; }
+};
+
+class WorkHour : public Time
+{
+	vector<Employee> employee_list;
+public:
+	WorkHour(short hour, short minute) : Time(hour, minute){ }
+	WorkHour(short hour, short minute, Employee& employee) : Time(hour, minute){ employee_list.push_back(employee); }
+
+	void addEmployee(Employee& employee){ employee_list.push_back(employee); }
+
 };
 
 class Day
 {
 	//vector<hour> hour_list;
 	days this_day;
-	vector<Time> time;
+	vector<WorkHour> time;
 
 public:
 	Day(days this_day);
 	days getDay();
+	vector<WorkHour> getTime();
 	string toString();
 };
 
@@ -67,6 +80,6 @@ class Month
 
 public:
 	Month(short month, short year);
-	void listDays();
+	void printToConsole();
 };
 
