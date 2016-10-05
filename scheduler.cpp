@@ -147,7 +147,7 @@ Day::Day(days this_day)
 	short close_hour = 22;
 
 	//utworzenie godzin
-	for (int i = open_hour; i <= close_hour; i++)
+	for (int i = open_hour; i <= close_hour-1; i++)
 	{
 		time.push_back(WorkHour(i, 0));
 	}
