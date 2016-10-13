@@ -1,5 +1,6 @@
 #include "scheduler.h"
-
+#include <cstdlib>
+#include <ctime>
 
 Employee::Employee(int id, string first_name, string last_name, positions position, times time)
 {
@@ -8,6 +9,15 @@ Employee::Employee(int id, string first_name, string last_name, positions positi
 	this->last_name = last_name;
 	this->position = position;
 	this->time = time;
+	this->working_hours = 0;
+
+	switch (time)
+	{
+	case FULL: time_multiplier = 1; break;
+	case THREE: time_multiplier = 3.0 / 4; break;
+	case HALF: time_multiplier = 1.0 / 2; break;
+	case QUATER: time_multiplier = 1.0 / 4; break;
+	}
 }
 
 short Employee::getID()
@@ -41,7 +51,16 @@ void Employee::printToConsole()
 	case 3: cout << "kierownik" << endl; break;
 	default: cout << "niepoprawna pozycja" << endl;
 	}
+
+	cout << "Free days: ";
+
+	for (short free_day : free_days)
+		cout << free_day << " ";
+
+	cout << endl;
 }
+
+//####################################################################################################
 
 void Shop::addEmployee(Employee& employee)
 {
@@ -85,30 +104,135 @@ void Shop::listEmployees()
 
 void Shop::makeSchedule(short month, short year)
 {
+	
 	//okresl miesiac
 	Month chosen_month(month, year); // konstuktor Month tworzy wektor dni w tym miesiacu
-
 	chosen_month.printToConsole();
 
+	for (Employee emp : employee_list)
+		emp.setWorkingHours(chosen_month.getWorkingHours() * emp.getTimeMultiplier());
+
+	assignFreeDays(chosen_month.getDaysInMonth()); // losuje dni z wolnej puli - rownomierna dystrybucja
+
+
 	// algorytm przyznawania godzin pracownikom...
-	//..
-	//..
+	
+	// POSORTOWAC TUTAJ PRACOWNIKOW WEDLUG TEGO, CZY MAJ¥ PREFERENCJE/¯YCZENIA oraz ewentualnie wed³ug priorytetu tych ¿yczeñ
+
+
+	for (Employee emp : employee_list)
+	{
+
+
+		for (Day d : chosen_month.getDayList())
+		{
+			//dla danego dnia...
+
+			//if (d.getDay() == firstFreeDay || d.getDay() == secondFreeDay)	// gdy aktualny dzien jest wolny to przeskocz do kolejnego dnia
+			//	continue;
+
+			for (WorkHour wh : d.getTime())
+			{
+				//dla danej godziny...
+
+
+			}
+		}
+
+		//while (emp.setWorkingHours > 0)
+		//{
+		//	
+		//}
+	}
+
+
 }
+
+void Shop::assignFreeDays(short days_in_month) // Employee and Shop and Month friend
+{
+	vector<short> week_standard_backup = { 1, 2, 3, 4, 5, 6, 7 };
+	vector<short> week_last_backup;
+
+	vector<short> week_this = week_standard_backup;
+
+	short last_days = days_in_month - 4 * 7;
+
+	for (int i = 0; i < last_days; i++)
+		week_last_backup.push_back(i + 1);
+
+
+	for (int i = 0; i < 4; i++)			// dla pierwszych 4 tygodni
+	{
+		for (Employee& emp : employee_list)
+		{		
+				short random_index = rand() % week_this.size() + 1;  // 1-7
+				short free_day = week_this[random_index - 1];
+				emp.free_days.push_back(i * 7 + free_day);		//  1-7 8-14 15-21 22-28
+				week_this.erase(week_this.begin() + random_index - 1);
+
+				if (week_this.empty())							// trick majacy na celu rownomierna dystrybuje wolnych dni
+					week_this = week_standard_backup;
+
+				random_index = rand() % week_this.size() + 1;  // 1-7									// to samo...
+				free_day = week_this[random_index - 1];
+				emp.free_days.push_back(i * 7 + free_day);		//  1-7 8-14 15-21 22-28
+				week_this.erase(week_this.begin() + random_index - 1);
+
+				if (week_this.empty())
+					week_this = week_standard_backup;
+		}
+
+		week_this = week_standard_backup;
+	}
+
+	//dla ostatniego tygodnia
+
+	week_this = week_last_backup;
+
+	for (Employee& emp : employee_list)
+	{
+
+		short random_index = rand() % week_this.size() + 1;  // 1-7
+		short free_day = week_this[random_index - 1];
+		emp.free_days.push_back(4 * 7 + free_day);		//  1-7 8-14 15-21 22-28
+		week_this.erase(week_this.begin() + random_index - 1);
+
+		if (week_this.empty())
+			week_this = week_standard_backup;
+	}
+}
+
+
+
+//####################################################################################################
 
 Month::Month(short month, short year)
 {
-	this->days_in_month = 30;		// pobrac pozniej ile ten miesiac ma dni
-	days first_day = THURSDAY;		// pobrac jaki jest pierwszy dzien
+	this->days_in_month = 31;		// pobrac pozniej ile ten miesiac ma dni
+	days first_day = SATURDAY;		// pobrac jaki jest pierwszy dzien
 	
 	short help_day = short(first_day);
 
 	for (short day = 0; day < days_in_month; day++)
 	{
 		day_list.push_back(Day(days(help_day)));
+		day_list[day].setDate( day + 1 );
 
 		help_day++;
 		help_day %= 7;
 	}
+
+	short tWeekendDays = 0;
+
+	for (Day d : day_list)
+	{
+		if (d.getDay() == SATURDAY || d.getDay() == SUNDAY)
+		{
+			tWeekendDays++;
+		}
+	}
+
+	this->weekend_days = tWeekendDays;
 }
 
 void Month::printToConsole()
@@ -138,6 +262,21 @@ void Month::printToConsole()
 
 	cout << endl;
 }
+
+short Month::getWorkingHours()
+{
+	short working_days = 0;
+	
+	for (Day this_day : day_list)
+	{
+		if (!(this_day.getDay() == SATURDAY || this_day.getDay() == SUNDAY))
+			working_days++;
+	}
+	
+	return working_days*8;
+}
+
+//####################################################################################################
 
 Day::Day(days this_day)
 {
@@ -177,10 +316,13 @@ string Day::toString()
 	}
 }
 
+//####################################################################################################
+
 Time::Time(short hour, short minute)
 {
 	this->hour = hour;
 	this->minute = minute;
 }
 
+//####################################################################################################
 
