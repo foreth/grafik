@@ -112,7 +112,7 @@ void Shop::makeSchedule(short month, short year)
 	for (Employee emp : employee_list)
 		emp.setWorkingHours(chosen_month.getWorkingHours() * emp.getTimeMultiplier());
 
-	assignFreeDays(chosen_month.getDaysInMonth()); // losuje dni z wolnej puli - rownomierna dystrybucja
+	assignFreeDays(chosen_month.getDaysInMonth(), chosen_month.getWeekendDays()); // losuje dni z wolnej puli - rownomierna dystrybucja
 
 
 	// algorytm przyznawania godzin pracownikom...
@@ -148,7 +148,7 @@ void Shop::makeSchedule(short month, short year)
 
 }
 
-void Shop::assignFreeDays(short days_in_month) // Employee and Shop and Month friend
+void Shop::assignFreeDays(short days_in_month, short weekend_days) // Employee and Shop and Month friend
 {
 	vector<short> week_standard_backup = { 1, 2, 3, 4, 5, 6, 7 };
 	vector<short> week_last_backup;
@@ -160,6 +160,8 @@ void Shop::assignFreeDays(short days_in_month) // Employee and Shop and Month fr
 	for (int i = 0; i < last_days; i++)
 		week_last_backup.push_back(i + 1);
 
+
+	// mozna od razu na starcie jakies DNI BEZWZGLEDNIE WOLNE OD PRACY wpisac do free_days
 
 	for (int i = 0; i < 4; i++)			// dla pierwszych 4 tygodni
 	{
@@ -177,7 +179,6 @@ void Shop::assignFreeDays(short days_in_month) // Employee and Shop and Month fr
 				free_day = week_this[random_index - 1];
 				emp.free_days.push_back(i * 7 + free_day);		//  1-7 8-14 15-21 22-28
 				week_this.erase(week_this.begin() + random_index - 1);
-
 				if (week_this.empty())
 					week_this = week_standard_backup;
 		}
@@ -187,18 +188,27 @@ void Shop::assignFreeDays(short days_in_month) // Employee and Shop and Month fr
 
 	//dla ostatniego tygodnia
 
-	week_this = week_last_backup;
-
-	for (Employee& emp : employee_list)
+	if (weekend_days > 8)
 	{
 
-		short random_index = rand() % week_this.size() + 1;  // 1-7
-		short free_day = week_this[random_index - 1];
-		emp.free_days.push_back(4 * 7 + free_day);		//  1-7 8-14 15-21 22-28
-		week_this.erase(week_this.begin() + random_index - 1);
+		week_this = week_last_backup;
 
-		if (week_this.empty())
-			week_this = week_standard_backup;
+		for (Employee& emp : employee_list)
+		{
+
+			short random_index = rand() % week_this.size() + 1;  // 1-7
+			short free_day = week_this[random_index - 1];
+			emp.free_days.push_back(4 * 7 + free_day);		//  1-7 8-14 15-21 22-28
+			week_this.erase(week_this.begin() + random_index - 1);
+
+			if (week_this.empty())
+				week_this = week_standard_backup;
+		}
+
+		if (weekend_days > 9)
+		{
+			// WYLOSOWAC JESZCZE JEDEN RANDOMOWY DZIEN W MIESIACU
+		}
 	}
 }
 

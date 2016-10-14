@@ -51,7 +51,7 @@ public:
 	void deleteEmployee(short id);
 	void listEmployees();
 	void makeSchedule(short month, short year);
-	void assignFreeDays(short days_in_month);
+	void assignFreeDays(short days_in_month, short weekend_days);
 };
 
 //####################################################################################################
